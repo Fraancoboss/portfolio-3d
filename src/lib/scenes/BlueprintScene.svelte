@@ -5,6 +5,7 @@
 	import StageOverlay from '$lib/ui/StageOverlay.svelte';
 	import Header from '$lib/ui/Header.svelte';
 	import Rope from '$lib/ui/Rope.svelte';
+	import MatrixRain from '$lib/ui/MatrixRain.svelte';
 	import { viewMode } from '$lib/state/headerState';
 
 	let handleWheel: (event: WheelEvent) => void;
@@ -21,6 +22,7 @@
 	on:pointerup={() => handlePointerUp?.()}
 	on:pointerleave={() => handlePointerUp?.()}
 >
+	<MatrixRain />
 	<Canvas>
 		<SceneContent
 			bind:handleWheel
@@ -46,9 +48,9 @@
 	}
 
 	.viewport :global(canvas) {
-		position: absolute;
+		position: relative;
 		inset: 0;
-		z-index: 0;
+		z-index: 1;
 	}
 
 	.main-layer {

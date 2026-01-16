@@ -5,7 +5,8 @@ import { cubicInOut, cubicOut } from 'svelte/easing';
 import { tweened } from 'svelte/motion';
 import type { Group } from 'three';
 
-	import Floor from '$lib/components/Floor.svelte';
+import BackgroundGrid from '$lib/scenes/BackgroundGrid.svelte';
+import Floor from '$lib/components/Floor.svelte';
 import Foundation from '$lib/components/Foundation.svelte';
 import Pillar from '$lib/components/Pillar.svelte';
 import Roof from '$lib/components/Roof.svelte';
@@ -163,6 +164,8 @@ onMount(() => {
 
 <T.AmbientLight intensity={0.4} />
 <T.DirectionalLight position={[4, 6, 3]} intensity={0.6} />
+
+<BackgroundGrid />
 
 <T.Group
 	name="StructureRoot"

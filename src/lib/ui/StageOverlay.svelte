@@ -2,28 +2,104 @@
 	import { pillarStage, progressStep } from '$lib/state/sceneState';
 
 	const copy = {
-		0: { title: 'LOW LEVEL', body: 'Las bases de cualquier sistema sólido se construyen en el bajo nivel. Lenguajes como C y Rust permiten comprender y controlar la memoria, la concurrencia y el rendimiento desde su raíz. Mientras C expone directamente los mecanismos fundamentales del sistema, Rust introduce garantías de seguridad de memoria y concurrencia segura sin sacrificar eficiencia. Dominar estos fundamentos no solo previene errores críticos, sino que habilita una escalabilidad segura, predecible y ágil permitiendo que proyectos complejos crezcan con confianza sobre una base técnica firme.' },
-		1: { title: 'LINUX / WINDOWS', body: 'Tras dominar el bajo nivel, es imprescindible una base sólida sobre la que operar. Windows actúa como el estándar empresarial y personal: omnipresente, interoperable y clave en entornos corporativos, desarrollo profesional y sistemas híbridos. Linux, por su parte, ofrece el control y la especialización necesarios para sistemas críticos. Arch Linux permite una personalización total del sistema operativo, ideal para comprender cada capa del entorno. Ubuntu se consolida como el estándar de facto en contenedores y despliegues por su estabilidad versionada, siendo especialmente relevante en robótica y sistemas críticos. Kali Linux completa el cimiento con un ecosistema orientado a detección, observabilidad y ciberdefensa, proporcionando herramientas clave para análisis, auditoría y respuesta ante amenazas. Sobre esta base operativa se construyen sistemas robustos, observables y preparados para entornos reales.' },
-		3: { title: 'HIGH LEVEL', body: 'En la capa superior, los lenguajes se abstraen casi por completo del hardware para priorizar productividad, interoperabilidad y orquestación. Python, TypeScript y Java permiten construir sistemas centrados en APIs, flujos de datos y servicios distribuidos sin exponer complejidades de bajo nivel. Esta capa es donde el software se vuelve consumible y automatizable, especialmente a través de APIs modernas y Model Context Protocols (MCP), que habilitan la integración nativa con modelos de inteligencia artificial. Aquí, la lógica ya no se ejecuta solo por usuarios, sino que puede ser invocada, encadenada y operada implícitamente por sistemas inteligentes, cerrando el ciclo desde los cimientos técnicos hasta la automatización avanzada.' },
+		0: {
+			title: 'LOW LEVEL',
+			body:
+				'Las bases de un sistema sólido\n' +
+				'nacen en el bajo nivel.\n\n' +
+				'Control de memoria.\n' +
+				'Control de concurrencia.\n' +
+				'Rendimiento predecible.\n\n' +
+				'C expone los mecanismos del sistema.\n' +
+				'Rust introduce memory safety\n' +
+				'y concurrencia segura.\n\n' +
+				'Estos fundamentos previenen fallos críticos\n' +
+				'y sostienen escalabilidad técnica.'
+		},
+		1: {
+			title: 'LINUX / WINDOWS',
+			body:
+				'Tras el bajo nivel,\n' +
+				'la base operativa define el entorno.\n\n' +
+				'Windows: estándar empresarial,\n' +
+				'interoperable y dominante.\n\n' +
+				'Linux: control y especialización.\n' +
+				'Arch Linux para comprensión total.\n' +
+				'Ubuntu como base de contenedores y despliegues.\n' +
+				'Kali Linux orientado a detección,\n' +
+				'observabilidad y ciberdefensa.\n\n' +
+				'Con esta base se construyen sistemas\n' +
+				'robustos, auditables y listos para producción.'
+		},
+		3: {
+			title: 'HIGH LEVEL',
+			body:
+				'En la capa superior\n' +
+				'la abstracción domina.\n\n' +
+				'Python, TypeScript y Java\n' +
+				'operan sobre APIs y flujos de datos\n' +
+				'sin exponer complejidad de bajo nivel.\n\n' +
+				'Las APIs modernas y los MCP\n' +
+				'habilitan integración nativa con IA.\n\n' +
+				'La lógica se invoca, se encadena\n' +
+				'y se opera en sistemas distribuidos.'
+		},
 		4: { title: 'TITULO 4', body: 'Lorem slkdjoaidjla...' }
 	} as const;
 
 	const pillarCopy = {
 		1: {
 			title: 'OBSERVABILITY',
-			body: 'Un sistema fiable debe ser observable desde su concepción. La trazabilidad de eventos, métricas y registros permite reconstruir el historial de acciones del sistema a lo largo de todo su ciclo de vida. Esta visibilidad es clave para auditar comportamientos, detectar ataques, identificar errores lógicos y analizar fallos antes de que se conviertan en incidentes críticos. Sin observabilidad no existe control real.'
+			body:
+				'Un sistema fiable debe ser observable\n' +
+				'desde su concepción.\n\n' +
+				'Trazabilidad de eventos,\n' +
+				'métricas y registros.\n\n' +
+				'Permite auditar comportamientos,\n' +
+				'detectar ataques y errores lógicos, necesario\n' +
+				'para anticipar incidentes críticos.\n\n' +
+				'Sin observability no hay control real.'
 		},
 		2: {
 			title: 'SECURE BY DESIGN',
-			body: 'La seguridad no debe añadirse como un parche, sino integrarse desde el inicio del diseño. Implementar principios de secure by design implica asumir una mayor carga inicial, pero evita deuda técnica y vulnerabilidades estructurales. Este enfoque facilita la escalabilidad, protege la integridad del sistema y permite que productos serios crezcan de forma sostenible.'
+			body:
+				'La seguridad no es un parche.\n' +
+				'Se integra desde el diseño.\n\n' +
+				'secure by design implica\n' +
+				'mayor carga inicial,\n' +
+				'menos deuda técnica\n' +
+				'y menos vulnerabilidades.\n\n' +
+				'Protege la integridad del sistema\n' +
+				'y sostiene crecimiento sostenible.'
 		},
 		3: {
 			title: 'ZERO TRUST',
-			body: 'La confianza implícita es uno de los mayores riesgos en sistemas modernos. El modelo Zero Trust asume que ningún usuario, servicio o dispositivo es fiable por defecto, incluso dentro del perímetro. Cada acceso debe ser verificado, autenticado y autorizado de forma continua. Este enfoque reduce drásticamente la superficie de ataque, limita el movimiento lateral y refuerza la resiliencia del sistema frente a compromisos parciales. Zero Trust no es una herramienta, es una arquitectura de seguridad alineada con entornos distribuidos, cloud y escalables.'
+			body:
+				'La confianza implícita\n' +
+				'es un riesgo estructural.\n\n' +
+				'Zero Trust asume que ningún actor\n' +
+				'es fiable por defecto.\n\n' +
+				'Cada acceso se verifica,\n' +
+				'se autentica y se autoriza\n' +
+				'de forma continua.\n\n' +
+				'Reduce superficie de ataque,\n' +
+				'limita movimiento lateral\n' +
+				'y refuerza resiliencia.\n\n' +
+				'Zero Trust es arquitectura,\n' +
+				'no una herramienta.'
 		},
 		4: {
-			title: 'ISO 27001',
-			body: 'La seguridad técnica solo es efectiva cuando se acompaña de marcos normativos y organizativos sólidos. ISO 27001 y el Esquema Nacional de Seguridad (ENS) proporcionan un marco estructurado para la gestión de la seguridad de la información, abarcando procesos, control de riesgos, cumplimiento y mejora continua. Su aplicación garantiza que la seguridad no dependa únicamente de implementaciones técnicas aisladas, sino de una estrategia integral, auditable y alineada con entornos empresariales y administraciones públicas.'
+			title: 'ISO 27001 / ENS',
+			body:
+				'La seguridad técnica requiere\n' +
+				'marcos organizativos sólidos.\n\n' +
+				'ISO 27001 y ENS estructuran\n' +
+				'la gestión de seguridad:\n' +
+				'procesos, riesgos, cumplimiento\n' +
+				'y mejora continua.\n\n' +
+				'Evitan depender de controles aislados\n' +
+				'y permiten auditoría consistente\n' +
+				'en entornos empresariales y públicos.'
 		}
 	} as const;
 

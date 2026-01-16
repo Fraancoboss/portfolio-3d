@@ -1,11 +1,17 @@
 <script lang="ts">
-	import { HEADER_HEIGHT, MAX_PULL, pullDistance, isOpen, viewMode } from '$lib/state/headerState';
+	import {
+		HEADER_HEIGHT,
+		MAX_PULL,
+		pullDistance,
+		isOpen,
+		viewMode,
+		headerPullStrength
+	} from '$lib/state/headerState';
 
 	const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 	$: offset = clamp($pullDistance, 0, MAX_PULL) - HEADER_HEIGHT;
 	$: showNav = $isOpen;
-
 	const navItems = [
 		{ label: 'MAIN', href: '#main', action: 'main' },
 		{ label: 'TECHNOLOGIES', href: '#technologies' },
@@ -110,8 +116,12 @@
 </header>
 
 <style>
+	:global(:root) {
+		--header-bg: #060c1a;
+	}
+
 	.header {
-		position: absolute;
+		position: fixed;
 		top: 0;
 		left: 0;
 		right: 0;
@@ -121,21 +131,45 @@
 		align-items: center;
 		justify-content: center;
 		color: #ffffff;
-		background: rgba(6, 12, 26, 0.9);
+		background: rgba(255, 255, 255, 0.025);
 		border-bottom: 3px solid rgba(28, 52, 92, 0.8);
 		pointer-events: auto;
 		transition: transform 180ms ease-out;
 		overflow: hidden;
+		backdrop-filter: blur(10px) saturate(1.8) brightness(1.18);
+		-webkit-backdrop-filter: blur(10px) saturate(1.8) brightness(1.18);
+		box-shadow:
+			0 16px 36px rgba(0, 0, 0, 0.35),
+			inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+			inset 0 -10px 20px rgba(0, 0, 0, 0.25);
 	}
 
 	.header::before {
 		content: '';
 		position: absolute;
-		left: 0;
-		right: 0;
-		top: -600vh;
-		height: 600vh;
-		background: rgba(6, 12, 26, 0.9);
+		inset: 0;
+		background:
+			linear-gradient(
+				180deg,
+				rgba(255, 255, 255, 0.22) 0%,
+				rgba(255, 255, 255, 0.08) 32%,
+				rgba(255, 255, 255, 0.02) 55%,
+				rgba(0, 0, 0, 0.15) 100%
+			);
+		mix-blend-mode: overlay;
+		opacity: 0.9;
+		pointer-events: none;
+	}
+
+	.header::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.35),
+			inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+		pointer-events: none;
 	}
 
 	.inner {

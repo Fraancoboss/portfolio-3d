@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { derived, writable } from 'svelte/store';
 
 export const MAX_PULL = 180;
 export const HEADER_HEIGHT = 120;
@@ -10,3 +10,12 @@ export const pullDistance = writable(0);
 export const pullForce = writable(0);
 export const isOpen = writable(false);
 export const viewMode = writable<'main' | 'projects'>('main');
+
+export const headerPullStrength = derived(pullForce, ($pullForce) =>
+	Math.min(Math.max($pullForce / MAX_PULL, 0), 1)
+);
+
+export const headerActive = derived(
+	[pullDistance, isOpen],
+	([$pullDistance, $isOpen]) => $pullDistance > 0 || $isOpen
+);
