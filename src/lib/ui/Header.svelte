@@ -14,7 +14,7 @@
 	$: showNav = $isOpen;
 	const navItems = [
 		{ label: 'MAIN', href: '#main', action: 'main' },
-		{ label: 'TECHNOLOGIES', href: '#technologies' },
+		{ label: 'KNOWLEDGE', href: '#technologies', action: 'knowledge' },
 		{ label: 'PROYECTS', href: '#proyects', action: 'projects' },
 		{ label: 'BLOG', href: '#blog' },
 		{ label: 'CONTACT', href: '#contact' }
@@ -90,7 +90,7 @@
 		lastOpen = false;
 	}
 
-	const handleNavClick = (event: MouseEvent, action?: 'main' | 'projects') => {
+	const handleNavClick = (event: MouseEvent, action?: 'main' | 'projects' | 'knowledge') => {
 		if (!action) return;
 		viewMode.set(action);
 		isOpen.set(false);

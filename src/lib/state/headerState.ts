@@ -9,7 +9,7 @@ export const OVERSHOOT = 16;
 export const pullDistance = writable(0);
 export const pullForce = writable(0);
 export const isOpen = writable(false);
-export const viewMode = writable<'main' | 'projects'>('main');
+export const viewMode = writable<'main' | 'projects' | 'knowledge'>('main');
 
 export const headerPullStrength = derived(pullForce, ($pullForce) =>
 	Math.min(Math.max($pullForce / MAX_PULL, 0), 1)

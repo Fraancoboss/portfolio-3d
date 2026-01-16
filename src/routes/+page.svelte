@@ -9,6 +9,11 @@
 <style>
 	:global(body) {
 		margin: 0;
+		overflow: hidden;
+	}
+
+	:global(html) {
+		overflow: hidden;
 	}
 
 	.viewport {

@@ -2,6 +2,7 @@
 	import { T } from '@threlte/core';
 	import { cubicOut } from 'svelte/easing';
 	import { tweened } from 'svelte/motion';
+	import type { Mesh } from 'three';
 	import * as THREE from 'three';
 
 	const geometry = new THREE.BoxGeometry(1.6, 0.18, 1.6);
@@ -12,6 +13,7 @@
 	export let hovered: boolean = false;
 	export let onEnter: () => void = () => {};
 	export let onLeave: () => void = () => {};
+	export let meshRef: Mesh | null = null;
 
 	const fade = tweened(0, { duration: 250, easing: cubicOut });
 
@@ -27,6 +29,7 @@
 	visible={$fade > 0.01}
 	position={[0, 0.13, 0]}
 	geometry={geometry}
+	bind:ref={meshRef}
 	on:pointerenter={onEnter}
 	on:pointerleave={onLeave}
 >

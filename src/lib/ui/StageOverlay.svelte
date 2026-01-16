@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { pillarStage, progressStep } from '$lib/state/sceneState';
 
 	const copy = {
@@ -110,6 +111,7 @@
 	let titleTimer: ReturnType<typeof setInterval> | null = null;
 	let bodyTimer: ReturnType<typeof setInterval> | null = null;
 	let lastKey = '';
+	let isMounted = false;
 
 	const keywordTerms = [
 		'C',
@@ -181,13 +183,20 @@
 		}, 14);
 	};
 
-	$: if (stage) {
+	onMount(() => {
+		isMounted = true;
+		return () => {
+			clearTimers();
+		};
+	});
+
+	$: if (stage && isMounted) {
 		const key = `${stage.title}::${stage.body}`;
 		if (key !== lastKey) {
 			lastKey = key;
 			startTyping(stage.title, stage.body);
 		}
-	} else {
+	} else if (!stage) {
 		lastKey = '';
 		clearTimers();
 		typedTitle = '';

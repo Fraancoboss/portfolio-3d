@@ -3,6 +3,8 @@
 	import SceneContent from '$lib/scenes/SceneContent.svelte';
 	import HoverOverlay from '$lib/ui/HoverOverlay.svelte';
 	import StageOverlay from '$lib/ui/StageOverlay.svelte';
+	import ProjectTextOverlay from '$lib/ui/ProjectTextOverlay.svelte';
+	import KnowledgeTextOverlay from '$lib/ui/KnowledgeTextOverlay.svelte';
 	import Header from '$lib/ui/Header.svelte';
 	import Rope from '$lib/ui/Rope.svelte';
 	import MatrixRain from '$lib/ui/MatrixRain.svelte';
@@ -33,10 +35,16 @@
 	</Canvas>
 	<Header />
 	<Rope />
-	<div class="main-layer" class:projects={$viewMode === 'projects'}>
+	<div
+		class="main-layer"
+		class:projects={$viewMode === 'projects'}
+		class:knowledge={$viewMode === 'knowledge'}
+	>
 		<HoverOverlay />
 		<StageOverlay />
 	</div>
+	<ProjectTextOverlay />
+	<KnowledgeTextOverlay />
 </div>
 
 <style>
@@ -61,7 +69,11 @@
 	}
 
 	.main-layer.projects {
-		transform: translateY(60vh);
+		transform: translateY(120vh);
+		opacity: 0;
+	}
+
+	.main-layer.knowledge {
 		opacity: 0;
 	}
 </style>
