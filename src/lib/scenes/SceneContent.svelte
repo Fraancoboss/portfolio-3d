@@ -1,4 +1,6 @@
 <script lang="ts">
+// Scene owns interaction, focus, and progress. Components are intentionally passive and emit events only.
+// Scene does NOT render UI overlays; it only publishes state for UI to read.
 import { T, useTask, useThrelte } from '@threlte/core';
 import { onMount } from 'svelte';
 import { cubicInOut, cubicOut } from 'svelte/easing';
@@ -39,6 +41,10 @@ let step = 0;
 	let lastWheelTime = 0;
 	let pillarStage = 0;
 
+	// Security note:
+	// Visual determinism is intentional. Predictable states reduce ambiguous UI behavior
+	// and prevent accidental interaction paths that could desync scene state.
+	// NOTE: The visual pipeline assumes discrete stages; intermediate values are intentionally not supported.
 	const sensitivity = 0.005;
 	const damping = 0.12;
 	const idleRotationSpeed = 0.002;
@@ -80,6 +86,9 @@ const roofX = tweened(roofHiddenX, stageTween);
 	const knowledgeHoverOpacity3 = tweened(1, knowledgeHoverTween);
 	const knowledgeHoverOpacity4 = tweened(1, knowledgeHoverTween);
 	const knowledgeHoverOpacity5 = tweened(1, knowledgeHoverTween);
+	// Intentionally explicit mapping.
+	// This avoids premature abstraction and keeps the visual pipeline predictable.
+	// Do not generalize unless the interaction model changes.
 	const cubeHiddenY = 6.2;
 	const cubeCenterY = 2.85;
 	const cubeGap = 2.0;
@@ -111,11 +120,10 @@ const roofX = tweened(roofHiddenX, stageTween);
 	const cubeOpacity4 = tweened(cubeSmallOpacity, cubeFocusTween);
 	const cubeOpacity5 = tweened(cubeSmallOpacity, cubeFocusTween);
 	let cubeFocusIndex = 0;
-	let cubeFocusReady = false;
-	let lastHoverIndex: number | null = null;
 	let knowledgeTriggered = false;
 	let knowledgeHoverIndex: number | null = null;
 	let lastKnowledgeHoverIndex: number | null = null;
+	let lastHoveredIndex: number | null = null;
 
 	const applyCubeFocus = (index: number) => {
 		const scales = [cubeScale1, cubeScale2, cubeScale3, cubeScale4, cubeScale5];
@@ -127,6 +135,17 @@ const roofX = tweened(roofHiddenX, stageTween);
 			store.set(i === index ? cubeLargeOpacity : cubeSmallOpacity, cubeFocusTween);
 		});
 		cubeFocusIndexStore.set(index);
+	};
+
+	const clearCubeFocus = () => {
+		const scales = [cubeScale1, cubeScale2, cubeScale3, cubeScale4, cubeScale5];
+		const opacities = [cubeOpacity1, cubeOpacity2, cubeOpacity3, cubeOpacity4, cubeOpacity5];
+		scales.forEach((store) => {
+			store.set(cubeSmallScale, cubeFocusTween);
+		});
+		opacities.forEach((store) => {
+			store.set(cubeSmallOpacity, cubeFocusTween);
+		});
 	};
 
 	const handlePointerDown = (event: PointerEvent) => {
@@ -152,6 +171,8 @@ const roofX = tweened(roofHiddenX, stageTween);
 	};
 
 	const updateHoverFromPointer = (event: PointerEvent) => {
+		// Raycasting is only meaningful in projects/knowledge; skip work in main view.
+		if ($viewMode === 'main') return;
 		const currentCamera = camera.current as THREE.Camera | undefined;
 		if (!currentCamera || !canvas) return;
 		const rect = canvas.getBoundingClientRect();
@@ -194,6 +215,8 @@ const roofX = tweened(roofHiddenX, stageTween);
 		if (now - lastWheelTime < wheelCooldownMs) return;
 		lastWheelTime = now;
 
+		// Projects is hover-driven; scroll input is intentionally ignored here.
+		if ($viewMode === 'projects') return;
 		if ($viewMode === 'knowledge') {
 			if (event.deltaY > 0 && !knowledgeTriggered) {
 				knowledgeTriggered = true;
@@ -311,18 +334,18 @@ onMount(() => {
 		});
 	}
 
+	// Projects mode is hover-driven only; no default or progressive focus exists.
 	$: if ($viewMode === 'projects') {
-		if ($cubeHoverIndexStore !== null && $cubeHoverIndexStore !== lastHoverIndex) {
-			lastHoverIndex = $cubeHoverIndexStore;
-			applyCubeFocus($cubeHoverIndexStore);
-		} else if ($cubeHoverIndexStore === null && lastHoverIndex !== null) {
-			lastHoverIndex = null;
-			applyCubeFocus(cubeFocusIndex);
+		const projectsActive = $cubeHoverIndexStore !== null || $cubeHoverLockStore;
+		if ($cubeHoverIndexStore !== null) {
+			lastHoveredIndex = $cubeHoverIndexStore;
 		}
-		if (!cubeFocusReady) {
-			cubeFocusIndex = 0;
-			applyCubeFocus(cubeFocusIndex);
-			cubeFocusReady = true;
+		if (projectsActive) {
+			const activeIndex = $cubeHoverIndexStore ?? lastHoveredIndex;
+			if (activeIndex !== null) applyCubeFocus(activeIndex);
+		} else {
+			lastHoveredIndex = null;
+			clearCubeFocus();
 		}
 		cubeX1.set(cubeTargetX1, { ...cubeTween, delay: 0 });
 		cubeX2.set(cubeTargetX2, { ...cubeTween, delay: 120 });
@@ -331,7 +354,6 @@ onMount(() => {
 		cubeX5.set(cubeTargetX5, { ...cubeTween, delay: 480 });
 		cubeY.set(cubeCenterY, { ...cubeTween, delay: 0 });
 	} else {
-		cubeFocusReady = false;
 		cubeX1.set(0, { ...cubeTween, delay: 0 });
 		cubeX2.set(0, { ...cubeTween, delay: 0 });
 		cubeX3.set(0, { ...cubeTween, delay: 0 });

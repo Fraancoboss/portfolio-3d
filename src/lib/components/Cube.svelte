@@ -1,4 +1,9 @@
 <script lang="ts">
+	// Component contract:
+	// This component is intentionally passive.
+	// It must not mutate global state or decide focus.
+	// It only renders visuals and emits interaction events.
+	// It does NOT own interaction flow or scene state.
 	import { onMount } from 'svelte';
 	import { T, useTask } from '@threlte/core';
 	import type { Group } from 'three';

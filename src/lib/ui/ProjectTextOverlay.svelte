@@ -1,4 +1,9 @@
 <script lang="ts">
+	// UI contract:
+	// This overlay is a read-only projection of scene state.
+	// It must not own interaction logic or mutate global state.
+	// Any emitted signals are interpreted by the scene layer only.
+	// It does NOT drive focus or progression; it only mirrors state.
 	import { onMount } from 'svelte';
 	import { cubeFocusIndex, cubeHoverIndex, cubeHoverLock } from '$lib/state/sceneState';
 	import { viewMode } from '$lib/state/headerState';
@@ -161,41 +166,41 @@
 		};
 	});
 
-	$: current = copy[$cubeFocusIndex] ?? copy[0];
-	$: isPrivate = $cubeFocusIndex === 2 || $cubeFocusIndex === 4;
+$: projectsActive = $viewMode === 'projects' && ($cubeHoverIndex !== null || $cubeHoverLock);
+$: current = copy[$cubeFocusIndex] ?? copy[0];
+$: isPrivate = $cubeFocusIndex === 2 || $cubeFocusIndex === 4;
 	$: buttonText = isPrivate ? '>> [REPOSITORIO PRIVADO -> CONTACTAME] <<' : '>> [VER REPOSITORIO] <<';
 	$: prompt = `${$cubeFocusIndex + 1}`;
 	$: repoHref = repoLinks[$cubeFocusIndex] ?? repoLinks[0];
-	$: if ($viewMode === 'projects' && isMounted && current) {
-		const key = `${current.title}::${current.body}`;
-		if (key !== lastKey) {
-			lastKey = key;
-			startTyping(current.title, current.body);
-		}
+$: if (projectsActive && isMounted && current) {
+	const key = `${current.title}::${current.body}`;
+	if (key !== lastKey) {
+		lastKey = key;
+		startTyping(current.title, current.body);
+	}
 		const buttonKey = `${$cubeFocusIndex}::${$viewMode}`;
 		if (buttonKey !== lastButtonKey) {
 			lastButtonKey = buttonKey;
 			startButtonReveal();
 		}
-	} else if ($viewMode !== 'projects') {
-		lastKey = '';
-		lastButtonKey = '';
-		clearTimers();
-		typedTitle = '';
-		typedBody = '';
+} else if (!projectsActive) {
+	lastKey = '';
+	lastButtonKey = '';
+	clearTimers();
+	typedTitle = '';
+	typedBody = '';
 		buttonDisplay = buttonText;
 		buttonReveal = 0;
 	}
 </script>
 
-{#if $viewMode === 'projects'}
+{#if projectsActive}
 	<div
 		class="terminal"
 		style={`--focus-index:${$cubeFocusIndex};`}
 		role="group"
 		on:mouseenter={() => {
 			cubeHoverLock.set(true);
-			cubeHoverIndex.set($cubeFocusIndex);
 		}}
 		on:mouseleave={() => {
 			cubeHoverLock.set(false);

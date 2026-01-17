@@ -11,11 +11,8 @@ export const pullForce = writable(0);
 export const isOpen = writable(false);
 export const viewMode = writable<'main' | 'projects' | 'knowledge'>('main');
 
+// Contract: pullDistance is canonical; pullForce is a derived signal from the same interaction.
+// Derived state: must not be written to directly. Changes originate from pullForce.
 export const headerPullStrength = derived(pullForce, ($pullForce) =>
 	Math.min(Math.max($pullForce / MAX_PULL, 0), 1)
-);
-
-export const headerActive = derived(
-	[pullDistance, isOpen],
-	([$pullDistance, $isOpen]) => $pullDistance > 0 || $isOpen
 );

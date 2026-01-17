@@ -4,12 +4,12 @@
 		MAX_PULL,
 		pullDistance,
 		isOpen,
-		viewMode,
-		headerPullStrength
+		viewMode
 	} from '$lib/state/headerState';
 
 	const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+	// pullDistance is the single source of truth for header translation.
 	$: offset = clamp($pullDistance, 0, MAX_PULL) - HEADER_HEIGHT;
 	$: showNav = $isOpen;
 	const navItems = [
@@ -117,6 +117,7 @@
 
 <style>
 	:global(:root) {
+		/* Shared base tone for header glass and legacy overlays. */
 		--header-bg: #060c1a;
 	}
 
@@ -131,6 +132,7 @@
 		align-items: center;
 		justify-content: center;
 		color: #ffffff;
+		/* Liquid glass layer: keep visuals aligned with the footer material. */
 		background: rgba(255, 255, 255, 0.025);
 		border-bottom: 3px solid rgba(28, 52, 92, 0.8);
 		pointer-events: auto;
@@ -145,6 +147,7 @@
 	}
 
 	.header::before {
+		/* Specular highlight layer to keep depth consistent with glass UI. */
 		content: '';
 		position: absolute;
 		inset: 0;
