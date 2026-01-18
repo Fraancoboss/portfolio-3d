@@ -5,6 +5,14 @@
 import { writable } from 'svelte/store';
 
 export type HoveredPart = 'floor' | 'foundation' | 'pillar' | 'roof' | null;
+export type AmbientVariant = 'dark-green' | 'amber' | 'cyan' | 'violet' | 'mono-white';
+export type AmbientTokens = {
+	backgroundColor: string;
+	gridColor: string;
+	matrixBase: string;
+	matrixHead: string;
+	accent: string;
+};
 
 export const hoveredPart = writable<HoveredPart>(null);
 // Security note: progressStep is discrete by design to keep states auditable and deterministic.
@@ -14,3 +22,14 @@ export const cubeFocusIndex = writable(0);
 export const cubeHoverIndex = writable<number | null>(null);
 export const cubeHoverLock = writable(false);
 export const knowledgeHoverIndex = writable<number | null>(null);
+export const mainScrollStarted = writable(false);
+
+// Scene-owned ambient state; UI reads only. Colors are resolved by the scene layer.
+export const ambientVariant = writable<AmbientVariant>('cyan');
+export const ambientTokens = writable<AmbientTokens>({
+	backgroundColor: '#0b1a3a',
+	gridColor: '#4da6ff',
+	matrixBase: '#6fb6ff',
+	matrixHead: '#a8d9ff',
+	accent: '#6ecbff'
+});

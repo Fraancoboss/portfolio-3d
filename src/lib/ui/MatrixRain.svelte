@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { ambientTokens } from '$lib/state/sceneState';
 
 	let canvas: HTMLCanvasElement;
 	let context: CanvasRenderingContext2D | null = null;
@@ -17,12 +18,17 @@
 
 	const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-*/[]{}<>|=';
 	const fontStack = "12px 'JetBrains Mono', 'Fira Code', 'Source Code Pro', Menlo, Consolas, monospace";
-	const baseColor = '#6fb6ff';
-	const headColor = '#a8d9ff';
+	let baseColor = '#6fb6ff';
+	let headColor = '#a8d9ff';
 	const baseAlpha = 0.18;
 	const spacing = 16;
 
 	let columns: Column[] = [];
+
+	$: if ($ambientTokens) {
+		baseColor = $ambientTokens.matrixBase;
+		headColor = $ambientTokens.matrixHead;
+	}
 
 	const buildColumns = (width: number, height: number) => {
 		const count = Math.max(18, Math.floor(width / 40));

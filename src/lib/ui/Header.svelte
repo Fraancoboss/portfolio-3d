@@ -6,18 +6,32 @@
 		isOpen,
 		viewMode
 	} from '$lib/state/headerState';
+import { ambientTokens, type AmbientVariant } from '$lib/state/sceneState';
+
+	export let requestAmbientVariant: (variant: AmbientVariant) => void = () => {};
 
 	const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 	// pullDistance is the single source of truth for header translation.
 	$: offset = clamp($pullDistance, 0, MAX_PULL) - HEADER_HEIGHT;
 	$: showNav = $isOpen;
+	$: ambientSwatch = $ambientTokens.accent;
+
+	let ambientOpen = false;
+	const ambientOptions: AmbientVariant[] = ['dark-green', 'amber', 'cyan', 'violet', 'mono-white'];
+	const ambientPreview: Record<AmbientVariant, string> = {
+		'dark-green': '#74e6b8',
+		amber: '#f7c76e',
+		cyan: '#6ecbff',
+		violet: '#b89cff',
+		'mono-white': '#d6e3ef'
+	};
 	const navItems = [
 		{ label: 'MAIN', href: '#main', action: 'main' },
 		{ label: 'KNOWLEDGE', href: '#technologies', action: 'knowledge' },
 		{ label: 'PROYECTS', href: '#proyects', action: 'projects' },
 		{ label: 'BLOG', href: '#blog' },
-		{ label: 'CONTACT', href: '#contact' }
+		{ label: 'CONTACT', href: '#contact', action: 'contact' }
 	] as const;
 	let navTimer: ReturnType<typeof setInterval> | null = null;
 	let lastOpen = false;
@@ -90,7 +104,7 @@
 		lastOpen = false;
 	}
 
-	const handleNavClick = (event: MouseEvent, action?: 'main' | 'projects' | 'knowledge') => {
+	const handleNavClick = (event: MouseEvent, action?: 'main' | 'projects' | 'knowledge' | 'contact') => {
 		if (!action) return;
 		viewMode.set(action);
 		isOpen.set(false);
@@ -98,8 +112,38 @@
 	};
 </script>
 
-<header class="header" style={`transform: translateY(${offset}px); height: ${HEADER_HEIGHT}px;`}>
+<header
+	class="header"
+	style={`transform: translateY(${offset}px); height: ${HEADER_HEIGHT}px; --header-accent: ${ambientSwatch};`}
+>
 	<div class="inner">
+		<div class="ambient-control">
+			<button
+				class="ambient-trigger"
+				aria-label="Ambient variant"
+				style={`--ambient-color: ${ambientSwatch};`}
+				on:click={() => (ambientOpen = !ambientOpen)}
+			>
+				<span class="ambient-dot"></span>
+			</button>
+			{#if ambientOpen}
+				<div class="ambient-panel">
+					{#each ambientOptions as option}
+						<button
+							class="ambient-option"
+							aria-label={`Ambient ${option}`}
+							style={`--ambient-color: ${ambientPreview[option]};`}
+							on:click={() => {
+								requestAmbientVariant(option);
+								ambientOpen = false;
+							}}
+						>
+							<span class="ambient-dot"></span>
+						</button>
+					{/each}
+				</div>
+			{/if}
+		</div>
 		{#if showNav}
 			{#each navItems as item, index}
 				<a
@@ -133,17 +177,17 @@
 		justify-content: center;
 		color: #ffffff;
 		/* Liquid glass layer: keep visuals aligned with the footer material. */
-		background: rgba(255, 255, 255, 0.025);
-		border-bottom: 3px solid rgba(28, 52, 92, 0.8);
+		background: rgba(255, 255, 255, 0.008);
+		border-bottom: 3px solid var(--header-accent);
 		pointer-events: auto;
 		transition: transform 180ms ease-out;
 		overflow: hidden;
 		backdrop-filter: blur(10px) saturate(1.8) brightness(1.18);
 		-webkit-backdrop-filter: blur(10px) saturate(1.8) brightness(1.18);
 		box-shadow:
-			0 16px 36px rgba(0, 0, 0, 0.35),
-			inset 0 0 0 1px rgba(255, 255, 255, 0.12),
-			inset 0 -10px 20px rgba(0, 0, 0, 0.25);
+			0 16px 36px rgba(0, 0, 0, 0.28),
+			inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+			inset 0 -10px 20px rgba(0, 0, 0, 0.18);
 	}
 
 	.header::before {
@@ -160,7 +204,7 @@
 				rgba(0, 0, 0, 0.15) 100%
 			);
 		mix-blend-mode: overlay;
-		opacity: 0.9;
+		opacity: 0.7;
 		pointer-events: none;
 	}
 
@@ -183,6 +227,62 @@
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		pointer-events: auto;
+	}
+
+	.ambient-control {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+	}
+
+	.ambient-trigger,
+	.ambient-option {
+		width: 26px;
+		height: 26px;
+		border-radius: 999px;
+		border: 1px solid rgba(255, 255, 255, 0.25);
+		background: rgba(7, 14, 30, 0.6);
+		padding: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: box-shadow 80ms ease, border-color 80ms ease, transform 80ms ease;
+	}
+
+	.ambient-dot {
+		width: 12px;
+		height: 12px;
+		border-radius: 999px;
+		background: var(--ambient-color);
+		box-shadow: 0 0 8px color-mix(in srgb, var(--ambient-color) 70%, transparent);
+	}
+
+	.ambient-trigger:hover,
+	.ambient-option:hover {
+		border-color: rgba(255, 255, 255, 0.5);
+		box-shadow: 0 0 12px rgba(110, 203, 255, 0.25);
+	}
+
+	.ambient-trigger:active,
+	.ambient-option:active {
+		transform: scale(0.95);
+	}
+
+	.ambient-panel {
+		position: absolute;
+		top: 34px;
+		left: 50%;
+		transform: translateX(-50%);
+		display: grid;
+		grid-auto-flow: column;
+		gap: 8px;
+		padding: 6px 8px;
+		border-radius: 999px;
+		background: rgba(7, 14, 30, 0.7);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
 	}
 
 	.link {

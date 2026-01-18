@@ -2,6 +2,9 @@
 	import { T } from '@threlte/core';
 	import * as THREE from 'three';
 
+	export let lineColor = '#4da6ff';
+	export let lineOpacity = 0.095;
+
 	const size = 60;
 	const divisions = 60;
 	const step = size / divisions;
@@ -19,9 +22,9 @@
 
 <T.LineSegments geometry={geometry} position={[0, -0.05, 0]} renderOrder={-10}>
 	<T.LineBasicMaterial
-		color="#4da6ff"
+		color={lineColor}
 		transparent
-		opacity={0.095}
+		opacity={lineOpacity}
 		depthWrite={false}
 		depthTest={false}
 	/>

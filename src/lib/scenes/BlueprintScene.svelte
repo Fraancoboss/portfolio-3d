@@ -3,17 +3,20 @@
 	import SceneContent from '$lib/scenes/SceneContent.svelte';
 	import HoverOverlay from '$lib/ui/HoverOverlay.svelte';
 	import StageOverlay from '$lib/ui/StageOverlay.svelte';
+	import CenterStageLabel from '$lib/ui/CenterStageLabel.svelte';
 	import ProjectTextOverlay from '$lib/ui/ProjectTextOverlay.svelte';
 	import KnowledgeTextOverlay from '$lib/ui/KnowledgeTextOverlay.svelte';
 	import Header from '$lib/ui/Header.svelte';
 	import Rope from '$lib/ui/Rope.svelte';
 	import MatrixRain from '$lib/ui/MatrixRain.svelte';
 	import { viewMode } from '$lib/state/headerState';
+	import type { AmbientVariant } from '$lib/state/sceneState';
 
 	let handleWheel: (event: WheelEvent) => void;
 	let handlePointerDown: (event: PointerEvent) => void;
 	let handlePointerMove: (event: PointerEvent) => void;
 	let handlePointerUp: () => void;
+	let requestAmbientVariant: (variant: AmbientVariant) => void;
 </script>
 
 <div
@@ -31,9 +34,10 @@
 			bind:handlePointerDown
 			bind:handlePointerMove
 			bind:handlePointerUp
+			bind:requestAmbientVariant
 		/>
 	</Canvas>
-	<Header />
+	<Header {requestAmbientVariant} />
 	<Rope />
 	<div
 		class="main-layer"
@@ -42,6 +46,7 @@
 	>
 		<HoverOverlay />
 		<StageOverlay />
+		<CenterStageLabel />
 	</div>
 	<ProjectTextOverlay />
 	<KnowledgeTextOverlay />

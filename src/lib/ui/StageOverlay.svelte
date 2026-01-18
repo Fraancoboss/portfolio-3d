@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { pillarStage, progressStep } from '$lib/state/sceneState';
+	import { pillarStage, progressStep, mainScrollStarted } from '$lib/state/sceneState';
 
 	const copy = {
 		0: {
@@ -45,7 +45,26 @@
 				'La lógica se invoca, se encadena\n' +
 				'y se opera en sistemas distribuidos.'
 		},
-		4: { title: 'TITULO 4', body: 'Lorem slkdjoaidjla...' }
+		4: {
+			title: 'GOBERNANZA',
+			body:
+				'Gobernanza aplicada\n' +
+				'al flujo operativo.\n\n' +
+				'Control de acceso,\n' +
+				'políticas y trazabilidad\n' +
+				'en cada petición.\n\n' +
+				'Sin gobernanza,\n' +
+				'el sistema pierde control.'
+		},
+		5: {
+			title: 'PRODUCCION',
+			body:
+				'Simulando el funcionamiento\n' +
+				'en producción.\n\n' +
+				'Aceptaremos solicitudes\n' +
+				'adecuadas y con los\n' +
+				'permisos necesarios.'
+		}
 	} as const;
 
 	const pillarCopy = {
@@ -104,7 +123,12 @@
 		}
 	} as const;
 
-	$: stage = $progressStep === 2 && $pillarStage >= 1 ? pillarCopy[$pillarStage] : copy[$progressStep];
+	$: stage =
+		$mainScrollStarted && $progressStep === 2 && $pillarStage >= 1
+			? pillarCopy[$pillarStage]
+			: $mainScrollStarted
+				? copy[$progressStep]
+				: null;
 
 	let typedTitle = '';
 	let typedBody = '';
