@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { viewMode } from '$lib/state/headerState';
 	import { pillarStage, progressStep, mainScrollStarted } from '$lib/state/sceneState';
 
 	const copy = {
@@ -124,11 +125,13 @@
 	} as const;
 
 	$: stage =
-		$mainScrollStarted && $progressStep === 2 && $pillarStage >= 1
-			? pillarCopy[$pillarStage]
-			: $mainScrollStarted
-				? copy[$progressStep]
-				: null;
+		$viewMode === 'main'
+			? $mainScrollStarted && $progressStep === 2 && $pillarStage >= 1
+				? pillarCopy[$pillarStage]
+				: $mainScrollStarted
+					? copy[$progressStep]
+					: null
+			: null;
 
 	let typedTitle = '';
 	let typedBody = '';
@@ -214,7 +217,7 @@
 		};
 	});
 
-	$: if (stage && isMounted) {
+	$: if (stage && isMounted && $viewMode === 'main') {
 		const key = `${stage.title}::${stage.body}`;
 		if (key !== lastKey) {
 			lastKey = key;
@@ -248,7 +251,7 @@
 		z-index: 20;
 		max-width: 560px;
 		padding: 18px 20px;
-		color: #ffffff;
+		color: var(--ui-text-color, #ffffff);
 		background: transparent;
 		border: none;
 		font: 15px/1.4 'JetBrains Mono', 'Fira Code', 'Source Code Pro', Menlo, Consolas, monospace;
@@ -275,7 +278,7 @@
 		width: 0.6em;
 		height: 1em;
 		margin-left: 0.08em;
-		background: #ffffff;
+		background: var(--ui-text-color, #ffffff);
 		vertical-align: -0.1em;
 		animation: blink 1s steps(1) infinite;
 	}

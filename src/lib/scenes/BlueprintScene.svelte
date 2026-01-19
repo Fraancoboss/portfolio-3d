@@ -6,11 +6,13 @@
 	import CenterStageLabel from '$lib/ui/CenterStageLabel.svelte';
 	import ProjectTextOverlay from '$lib/ui/ProjectTextOverlay.svelte';
 	import KnowledgeTextOverlay from '$lib/ui/KnowledgeTextOverlay.svelte';
+	import ScrollHints from '$lib/ui/ScrollHints.svelte';
+	import PortfolioGuide from '$lib/ui/PortfolioGuide.svelte';
 	import Header from '$lib/ui/Header.svelte';
 	import Rope from '$lib/ui/Rope.svelte';
 	import MatrixRain from '$lib/ui/MatrixRain.svelte';
 	import { viewMode } from '$lib/state/headerState';
-	import type { AmbientVariant } from '$lib/state/sceneState';
+	import { ambientTokens, type AmbientVariant } from '$lib/state/sceneState';
 
 	let handleWheel: (event: WheelEvent) => void;
 	let handlePointerDown: (event: PointerEvent) => void;
@@ -21,6 +23,7 @@
 
 <div
 	class="viewport"
+	style={`--ui-text-color: ${$ambientTokens.uiText}; --ui-line-color: ${$ambientTokens.uiLine};`}
 	on:wheel|preventDefault={(event) => handleWheel?.(event)}
 	on:pointerdown={(event) => handlePointerDown?.(event)}
 	on:pointermove={(event) => handlePointerMove?.(event)}
@@ -38,6 +41,8 @@
 		/>
 	</Canvas>
 	<Header {requestAmbientVariant} />
+	<ScrollHints />
+	<PortfolioGuide />
 	<Rope />
 	<div
 		class="main-layer"
@@ -71,6 +76,7 @@
 		inset: 0;
 		z-index: 10;
 		transition: transform 650ms ease-in-out, opacity 650ms ease-in-out;
+		pointer-events: none;
 	}
 
 	.main-layer.projects {

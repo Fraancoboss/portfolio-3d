@@ -40,7 +40,7 @@
 		left: 24px;
 		padding: 12px 14px;
 		border: 1px solid rgba(255, 255, 255, 0.25);
-		color: #ffffff;
+		color: var(--ui-text-color, #ffffff);
 		background: rgba(7, 14, 30, 0.7);
 		font: 12px/1.4 'IBM Plex Mono', monospace;
 		letter-spacing: 0.02em;

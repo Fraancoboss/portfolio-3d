@@ -7,7 +7,8 @@
 		OPEN_THRESHOLD,
 		OVERSHOOT,
 		pullDistance,
-		pullForce
+		pullForce,
+		ropeInteracted
 	} from '$lib/state/headerState';
 
 	let isDragging = false;
@@ -27,6 +28,7 @@
 			clearTimeout(settleTimer);
 			settleTimer = null;
 		}
+		ropeInteracted.set(true);
 		isDragging = true;
 		startY = event.clientY;
 		startPull = $pullDistance;

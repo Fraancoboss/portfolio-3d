@@ -21,6 +21,7 @@
 		$gltf.scene.traverse((obj) => {
 			const mesh = obj as Mesh;
 			if (!mesh.isMesh) return;
+			mesh.raycast = () => null;
 			const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 			materials.forEach((mat) => {
 				const material = mat as Material & {

@@ -13,6 +13,8 @@
 	export let hovered: boolean = false;
 	export let onEnter: () => void = () => {};
 	export let onLeave: () => void = () => {};
+	export let onClick: () => void = () => {};
+	export let yOffset = 0.13;
 	export let meshRef: Mesh | null = null;
 
 	const fade = tweened(0, { duration: 250, easing: cubicOut });
@@ -27,11 +29,12 @@
 
 <T.Mesh
 	visible={$fade > 0.01}
-	position={[0, 0.13, 0]}
+	position={[0, yOffset, 0]}
 	geometry={geometry}
 	bind:ref={meshRef}
 	on:pointerenter={onEnter}
 	on:pointerleave={onLeave}
+	on:click={onClick}
 >
 	<T.MeshStandardMaterial
 		color={faceColor}
@@ -45,7 +48,7 @@
 
 <T.LineSegments
 	geometry={edges}
-	position={[0, 0.13, 0]}
+	position={[0, yOffset, 0]}
 	scale={[1.002, 1.002, 1.002]}
 	raycast={() => null}
 	visible={$fade > 0.01}
@@ -55,7 +58,7 @@
 
 <T.LineSegments
 	geometry={edges}
-	position={[0, 0.13, 0]}
+	position={[0, yOffset, 0]}
 	scale={[1.002, 1.002, 1.002]}
 	raycast={() => null}
 	visible={$fade > 0.01}

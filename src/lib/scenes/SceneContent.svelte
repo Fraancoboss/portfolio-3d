@@ -24,6 +24,8 @@ import {
 	cubeHoverLock as cubeHoverLockStore,
 	knowledgeHoverIndex as knowledgeHoverIndexStore,
 	mainScrollStarted,
+	lastMainScrollAt,
+	stepCommand,
 	ambientVariant,
 	ambientTokens
 } from '$lib/state/sceneState';
@@ -41,6 +43,8 @@ import { viewMode } from '$lib/state/headerState';
 	const rotationHit = new THREE.Vector3();
 	const cubeMeshes: Array<THREE.Mesh | null> = Array(5).fill(null);
 	const knowledgeMeshes: Array<THREE.Mesh | null> = Array(5).fill(null);
+	const contactMeshes: Array<THREE.Mesh | null> = Array(3).fill(null);
+	let contactHoverIndex: number | null = null;
 
 	let isDragging = false;
 	let lastX = 0;
@@ -319,40 +323,59 @@ const roofX = tweened(roofHiddenX, stageTween);
 	};
 
 	const ambientPalette = {
-		'dark-green': {
-			backgroundColor: '#08140e',
-			gridColor: '#5ecf9a',
-			matrixBase: '#6fddb0',
-			matrixHead: '#b7f7db',
-			accent: '#74e6b8'
+		hackgreen: {
+			backgroundColor: '#050d08',
+			gridColor: '#2fe28b',
+			matrixBase: '#55e7a4',
+			matrixHead: '#b7ffe3',
+			accent: '#3be294',
+			uiText: '#ffffff',
+			uiLine: '#ffffff'
 		},
-		amber: {
-			backgroundColor: '#1a1206',
-			gridColor: '#f0b24a',
-			matrixBase: '#f5c46b',
-			matrixHead: '#ffe3b5',
-			accent: '#f7c76e'
-		},
-		cyan: {
+		blueprint: {
 			backgroundColor: '#0b1a3a',
 			gridColor: '#4da6ff',
 			matrixBase: '#6fb6ff',
 			matrixHead: '#a8d9ff',
-			accent: '#6ecbff'
+			accent: '#6ecbff',
+			uiText: '#ffffff',
+			uiLine: '#ffffff'
 		},
-		violet: {
+		infrared: {
+			backgroundColor: '#170607',
+			gridColor: '#ff4d4d',
+			matrixBase: '#ff6b6b',
+			matrixHead: '#ffd1d1',
+			accent: '#ff5a5a',
+			uiText: '#ffffff',
+			uiLine: '#ffffff'
+		},
+		ultraviolet: {
 			backgroundColor: '#1a0f2a',
 			gridColor: '#9f7bff',
 			matrixBase: '#b297ff',
 			matrixHead: '#e1d3ff',
-			accent: '#b89cff'
+			accent: '#b89cff',
+			uiText: '#ffffff',
+			uiLine: '#ffffff'
 		},
-		'mono-white': {
-			backgroundColor: '#0a0d12',
-			gridColor: '#c7d2df',
-			matrixBase: '#d8e1ea',
-			matrixHead: '#f4f8fb',
-			accent: '#d6e3ef'
+		cleanblack: {
+			backgroundColor: '#0b0b0b',
+			gridColor: '#bfc5cc',
+			matrixBase: '#dfe3e8',
+			matrixHead: '#ffffff',
+			accent: '#e6e6e6',
+			uiText: '#ffffff',
+			uiLine: '#ffffff'
+		},
+		nukewhite: {
+			backgroundColor: '#ffffff',
+			gridColor: '#0b0b0b',
+			matrixBase: '#111111',
+			matrixHead: '#000000',
+			accent: '#0b0b0b',
+			uiText: '#0b0b0b',
+			uiLine: '#0b0b0b'
 		}
 	} as const;
 
@@ -392,7 +415,7 @@ const roofX = tweened(roofHiddenX, stageTween);
 		progressStep.set(-1);
 	};
 
-	$: currentAmbient = ambientPalette[$ambientVariant] ?? ambientPalette.cyan;
+	$: currentAmbient = ambientPalette[$ambientVariant] ?? ambientPalette.blueprint;
 	$: ambientTokens.set(currentAmbient);
 	$: particleBaseColor.set(currentAmbient.matrixHead);
 	$: wrapperLineColor = wrapperFlashColor ?? currentAmbient.matrixHead;
@@ -515,77 +538,12 @@ const roofX = tweened(roofHiddenX, stageTween);
 		cubeHoverIndexStore.set(null);
 		knowledgeHoverIndex = null;
 		knowledgeHoverIndexStore.set(null);
+		contactHoverIndex = null;
 	};
 
-	const updateHoverFromPointer = (event: PointerEvent) => {
-		// Raycasting is only meaningful in projects/knowledge; skip work in main view.
-		if ($viewMode === 'main') return;
-		const currentCamera = camera.current as THREE.Camera | undefined;
-		if (!currentCamera || !canvas) return;
-		const rect = canvas.getBoundingClientRect();
-		const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-		const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-		pointer.set(x, y);
-		raycaster.setFromCamera(pointer, currentCamera);
-
-		if ($viewMode === 'projects') {
-			if ($cubeHoverLockStore) return;
-			const targets = cubeMeshes.filter((mesh): mesh is THREE.Mesh => Boolean(mesh));
-			if (!targets.length) return;
-			const hits = raycaster.intersectObjects(targets, false);
-			if (hits.length) {
-				const hitIndex = targets.indexOf(hits[0].object as THREE.Mesh);
-				cubeHoverIndexStore.set(hitIndex >= 0 ? hitIndex : null);
-			} else {
-				cubeHoverIndexStore.set(null);
-			}
-			return;
-		}
-
-		if ($viewMode === 'knowledge') {
-			const targets = knowledgeMeshes.filter((mesh): mesh is THREE.Mesh => Boolean(mesh));
-			if (!targets.length) return;
-			const hits = raycaster.intersectObjects(targets, false);
-			if (hits.length) {
-				const hitIndex = targets.indexOf(hits[0].object as THREE.Mesh);
-				knowledgeHoverIndex = hitIndex >= 0 ? hitIndex : null;
-				knowledgeHoverIndexStore.set(knowledgeHoverIndex);
-			} else {
-				knowledgeHoverIndex = null;
-				knowledgeHoverIndexStore.set(null);
-			}
-		}
-	};
-
-	const handleWheel = (event: WheelEvent) => {
-		const now = performance.now();
-		if (now - lastWheelTime < wheelCooldownMs) return;
-		lastWheelTime = now;
-
-		// Projects is hover-driven; scroll input is intentionally ignored here.
-		if ($viewMode === 'projects') return;
-		if ($viewMode === 'knowledge') {
-			if (event.deltaY > 0 && !knowledgeTriggered) {
-				knowledgeTriggered = true;
-				knowledgeAppear.set(1);
-			} else if (event.deltaY < 0 && knowledgeTriggered) {
-				knowledgeTriggered = false;
-				knowledgeAppear.set(0);
-			}
-			return;
-		}
-
-		if ($viewMode === 'main') {
-			mainScrollStarted.set(true);
-		}
-
-		if ($viewMode === 'projects') {
-			const direction = event.deltaY > 0 ? 1 : -1;
-			cubeFocusIndex = (cubeFocusIndex + direction + 5) % 5;
-			applyCubeFocus(cubeFocusIndex);
-		}
-
-		if (event.deltaY > 0) {
+	const applyMainStepDelta = (direction: 1 | -1) => {
+		if ($viewMode !== 'main') return;
+		if (direction > 0) {
 			if (step < 3) {
 				step = Math.min(3, step + 1);
 				setProgressForStep(step);
@@ -626,43 +584,150 @@ const roofX = tweened(roofHiddenX, stageTween);
 			if (step >= 7) return;
 			step = 6;
 			setProgressForStep(step);
+			return;
 		}
-		if (event.deltaY < 0) {
-			if (step > 6) {
-				step = 6;
-				setProgressForStep(step);
-				return;
-			}
-			if (step === 4) {
-				step = 3;
-				setProgressForStep(step);
-				pillarStage = 4;
-				pillarStageStore.set(pillarStage);
-				return;
-			}
-			if (step === 3 && pillarStage > 0) {
-				if (pillarStage === 1) {
-					pillarStage = 0;
-					pillarStageStore.set(pillarStage);
-					step = 2;
-					progressStep.set(1);
-					return;
-				}
-				pillarStage -= 1;
-				pillarStageStore.set(pillarStage);
-				return;
-			}
-			step = Math.max(0, step - 1);
+
+		if (step > 6) {
+			step = 6;
 			setProgressForStep(step);
-			if (step < 3) {
+			return;
+		}
+		if (step === 4) {
+			step = 3;
+			setProgressForStep(step);
+			pillarStage = 4;
+			pillarStageStore.set(pillarStage);
+			return;
+		}
+		if (step === 3 && pillarStage > 0) {
+			if (pillarStage === 1) {
 				pillarStage = 0;
 				pillarStageStore.set(pillarStage);
+				step = 2;
+				progressStep.set(1);
+				return;
 			}
-			if ($viewMode === 'main' && step === 0) {
-				mainScrollStarted.set(false);
+			pillarStage -= 1;
+			pillarStageStore.set(pillarStage);
+			return;
+		}
+		step = Math.max(0, step - 1);
+		setProgressForStep(step);
+		if (step < 3) {
+			pillarStage = 0;
+			pillarStageStore.set(pillarStage);
+		}
+		if ($viewMode === 'main' && step === 0) {
+			mainScrollStarted.set(false);
+		}
+	};
+
+	const updateHoverFromPointer = (event: PointerEvent) => {
+		// Raycasting is only meaningful in projects/knowledge; skip work in main view.
+		if ($viewMode === 'main') return;
+		const currentCamera = camera.current as THREE.Camera | undefined;
+		if (!currentCamera || !canvas) return;
+		const rect = canvas.getBoundingClientRect();
+		const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+		const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+		pointer.set(x, y);
+		raycaster.setFromCamera(pointer, currentCamera);
+
+		if ($viewMode === 'projects') {
+			if ($cubeHoverLockStore) return;
+			const targets = cubeMeshes.filter((mesh): mesh is THREE.Mesh => Boolean(mesh));
+			if (!targets.length) return;
+			const hits = raycaster.intersectObjects(targets, false);
+			if (hits.length) {
+				const hitIndex = targets.indexOf(hits[0].object as THREE.Mesh);
+				cubeHoverIndexStore.set(hitIndex >= 0 ? hitIndex : null);
+			} else {
+				cubeHoverIndexStore.set(null);
+			}
+			return;
+		}
+
+		if ($viewMode === 'knowledge') {
+			const targets = knowledgeMeshes.filter((mesh): mesh is THREE.Mesh => Boolean(mesh));
+			if (!targets.length) return;
+			const hits = raycaster.intersectObjects(targets, false);
+			if (hits.length) {
+				const hitIndex = targets.indexOf(hits[0].object as THREE.Mesh);
+				knowledgeHoverIndex = hitIndex >= 0 ? hitIndex : null;
+				knowledgeHoverIndexStore.set(knowledgeHoverIndex);
+			} else {
+				knowledgeHoverIndex = null;
+				knowledgeHoverIndexStore.set(null);
+			}
+			return;
+		}
+
+		if ($viewMode === 'contact') {
+			const targets = contactMeshes
+				.map((mesh, index) => (mesh ? { mesh, index } : null))
+				.filter((entry): entry is { mesh: THREE.Mesh; index: number } => Boolean(entry));
+			if (!targets.length) {
+				contactHoverIndex = null;
+				return;
+			}
+			const hits = raycaster.intersectObjects(
+				targets.map((entry) => entry.mesh),
+				false
+			);
+			if (hits.length) {
+				const match = targets.find((entry) => entry.mesh === hits[0].object);
+				contactHoverIndex = match ? match.index : null;
+			} else {
+				contactHoverIndex = null;
 			}
 		}
 	};
+
+	const handleWheel = (event: WheelEvent) => {
+		const now = performance.now();
+		if (now - lastWheelTime < wheelCooldownMs) return;
+		lastWheelTime = now;
+
+		// Projects is hover-driven; scroll input is intentionally ignored here.
+		if ($viewMode === 'projects') return;
+		if ($viewMode === 'knowledge') {
+			if (event.deltaY > 0 && !knowledgeTriggered) {
+				knowledgeTriggered = true;
+				knowledgeAppear.set(1);
+			} else if (event.deltaY < 0 && knowledgeTriggered) {
+				knowledgeTriggered = false;
+				knowledgeAppear.set(0);
+			}
+			return;
+		}
+
+	if ($viewMode === 'main') {
+		mainScrollStarted.set(true);
+		lastMainScrollAt.set(Date.now());
+	}
+
+		if ($viewMode === 'projects') {
+			const direction = event.deltaY > 0 ? 1 : -1;
+			cubeFocusIndex = (cubeFocusIndex + direction + 5) % 5;
+			applyCubeFocus(cubeFocusIndex);
+		}
+
+		if (event.deltaY > 0) {
+			applyMainStepDelta(1);
+		}
+		if (event.deltaY < 0) {
+			applyMainStepDelta(-1);
+		}
+	};
+
+	$: if ($stepCommand) {
+		if ($viewMode === 'main') {
+			mainScrollStarted.set(true);
+			lastMainScrollAt.set(Date.now());
+			applyMainStepDelta($stepCommand === 'next' ? 1 : -1);
+		}
+		stepCommand.set(null);
+	}
 
 onMount(() => {
 	setProgressForStep(step);
@@ -854,6 +919,10 @@ $: structureYOffset.set(step >= 5 ? structureLiftY : 0, structureTween);
 		knowledgeAppear.set(0);
 		knowledgeHoverIndex = null;
 		knowledgeHoverIndexStore.set(null);
+	}
+
+	$: if ($viewMode !== 'contact') {
+		contactHoverIndex = null;
 	}
 
 	$: if ($viewMode === 'knowledge' && knowledgeHoverIndex !== lastKnowledgeHoverIndex) {
@@ -1138,7 +1207,11 @@ $: structureYOffset.set(step >= 5 ? structureLiftY : 0, structureTween);
 	</T.Points>
 {/if}
 
-<ContactScene visible={$viewMode === 'contact'} />
+<ContactScene
+	visible={$viewMode === 'contact'}
+	hoverIndex={contactHoverIndex}
+	contactMeshes={contactMeshes}
+/>
 
 {#if $viewMode === 'knowledge'}
 	<T.Group name="KnowledgeFoundations" position={[0, knowledgeY, 0]}>

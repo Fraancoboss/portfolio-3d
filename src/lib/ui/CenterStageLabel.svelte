@@ -10,7 +10,7 @@
 		'sistemas distribuidos y seguros\n' +
 		'para seguir innovando\n' +
 		'en la tecnología.';
-	const arrows = '<────────>                                 <────────>';
+	const arrows = '<────────>                                   <────────>';
 
 	let typedTitle = '';
 	let typedBody = '';
@@ -122,7 +122,7 @@
 		transform: translateX(-50%);
 		z-index: 20;
 		padding: 10px 16px;
-		color: #ffffff;
+		color: var(--ui-text-color, #ffffff);
 		background: transparent;
 		font: 15px/1.4 'JetBrains Mono', 'Fira Code', 'Source Code Pro', Menlo, Consolas, monospace;
 		letter-spacing: 0.02em;
@@ -160,7 +160,7 @@
 		width: 8px;
 		height: 16px;
 		margin-left: 2px;
-		background: #ffffff;
+		background: var(--ui-text-color, #ffffff);
 		animation: blink 1s steps(2, start) infinite;
 		vertical-align: -2px;
 	}

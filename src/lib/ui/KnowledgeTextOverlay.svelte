@@ -199,7 +199,7 @@
 		z-index: 30;
 		max-width: 460px;
 		padding: 24px 26px;
-		color: #ffffff;
+		color: var(--ui-text-color, #ffffff);
 		background: transparent;
 		border: none;
 		font: 15px/1.4 'JetBrains Mono', 'Fira Code', 'Source Code Pro', Menlo, Consolas, monospace;
@@ -244,7 +244,7 @@
 		width: 0.6em;
 		height: 1em;
 		margin-left: 0.08em;
-		background: #ffffff;
+		background: var(--ui-text-color, #ffffff);
 		vertical-align: -0.1em;
 		animation: blink 1s steps(1) infinite;
 	}
