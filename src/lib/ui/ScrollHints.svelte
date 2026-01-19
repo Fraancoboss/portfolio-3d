@@ -212,9 +212,10 @@
 	.header-hint {
 		top: 44px;
 		left: auto;
-		right: 0;
+		right: -12px;
 		transform: none;
 		align-items: flex-end;
+		gap: 12px;
 	}
 
 	.header-hint .label.wave {
@@ -222,8 +223,8 @@
 	}
 
 	.header-hint .arrow {
-		width: 12px;
-		height: 12px;
+		width: 10px;
+		height: 10px;
 	}
 
 	.label {
