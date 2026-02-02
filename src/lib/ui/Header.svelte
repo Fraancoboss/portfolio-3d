@@ -23,8 +23,7 @@
 		{ variant: 'blueprint', label: 'Blueprint', detail: 'default blue' },
 		{ variant: 'infrared', label: 'Infrared', detail: 'red spectrum' },
 		{ variant: 'ultraviolet', label: 'Ultraviolet', detail: 'violet spectrum' },
-		{ variant: 'cleanblack', label: 'Cleanblack', detail: 'mono black/white' },
-		{ variant: 'nukewhite', label: 'Nukewhite', detail: 'white + black' }
+		{ variant: 'cleanblack', label: 'Cleanblack', detail: 'mono black/white' }
 	] as const satisfies Array<{
 		variant: AmbientVariant;
 		label: string;
@@ -35,8 +34,7 @@
 		blueprint: '#6ecbff',
 		infrared: '#ff5a5a',
 		ultraviolet: '#b89cff',
-		cleanblack: '#e6e6e6',
-		nukewhite: '#0b0b0b'
+		cleanblack: '#e6e6e6'
 	};
 	$: activeTheme =
 		ambientOptions.find((option) => option.variant === $ambientVariant) ?? ambientOptions[1];
@@ -44,7 +42,7 @@
 		{ label: 'MAIN', href: '#main', action: 'main' },
 		{ label: 'KNOWLEDGE', href: '#technologies', action: 'knowledge' },
 		{ label: 'PROYECTS', href: '#proyects', action: 'projects' },
-		{ label: 'BLOG', href: '#blog' },
+		{ label: 'BLOG', href: '#blog', action: 'blog' },
 		{ label: 'CONTACT', href: '#contact', action: 'contact' }
 	] as const;
 	let navTimer: ReturnType<typeof setInterval> | null = null;
@@ -135,7 +133,10 @@
 
 	let themeVisible = false;
 
-	const handleNavClick = (event: MouseEvent, action?: 'main' | 'projects' | 'knowledge' | 'contact') => {
+	const handleNavClick = (
+		event: MouseEvent,
+		action?: 'main' | 'projects' | 'knowledge' | 'contact' | 'blog'
+	) => {
 		if (!action) return;
 		viewMode.set(action);
 		isOpen.set(false);

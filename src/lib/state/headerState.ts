@@ -9,7 +9,7 @@ export const OVERSHOOT = 16;
 export const pullDistance = writable(0);
 export const pullForce = writable(0);
 export const isOpen = writable(false);
-export const viewMode = writable<'main' | 'projects' | 'knowledge' | 'contact'>('main');
+export const viewMode = writable<'main' | 'projects' | 'knowledge' | 'contact' | 'blog'>('main');
 export const ropeInteracted = writable(false);
 
 // Contract: pullDistance is canonical; pullForce is a derived signal from the same interaction.

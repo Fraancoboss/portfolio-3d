@@ -15,6 +15,7 @@ import Pillar from '$lib/components/Pillar.svelte';
 import Roof from '$lib/components/Roof.svelte';
 import Cube from '$lib/components/Cube.svelte';
 import ContactScene from '$lib/scenes/ContactScene.svelte';
+import KnowledgeTower from '$lib/scenes/KnowledgeTower.svelte';
 import {
 	hoveredPart,
 	progressStep,
@@ -43,8 +44,11 @@ import { viewMode } from '$lib/state/headerState';
 	const rotationHit = new THREE.Vector3();
 	const cubeMeshes: Array<THREE.Mesh | null> = Array(5).fill(null);
 	const knowledgeMeshes: Array<THREE.Mesh | null> = Array(5).fill(null);
+	const knowledgeTowerMeshes: Array<THREE.Mesh | null> = Array(2).fill(null);
 	const contactMeshes: Array<THREE.Mesh | null> = Array(3).fill(null);
+	let contactLinks: Array<string | null> = [];
 	let contactHoverIndex: number | null = null;
+	let knowledgeTowerHoverIndex: number | null = null;
 
 	let isDragging = false;
 	let lastX = 0;
@@ -94,8 +98,16 @@ const roofX = tweened(roofHiddenX, stageTween);
 	const sceneYOffset = tweened(0, sceneTween);
 	const knowledgeSpacing = 1.5;
 	const knowledgeY = 0.8;
+	const knowledgeDropDistance = 6.5;
+	const towerBaseY = 2.3;
+	const towerSpacing = 3.0;
+	const reelOffset = 10.5;
+	const reelDuration = 520;
 	const knowledgeScale: [number, number, number] = [0.65, 0.65, 0.65];
 	const knowledgeAppear = tweened(0, { duration: 420, easing: cubicOut });
+	const knowledgeDrop = tweened(0, { duration: 520, easing: cubicOut });
+	const towerAppear = tweened(0, { duration: 520, easing: cubicOut });
+	const reelProgress = tweened(0, { duration: 520, easing: cubicOut });
 	const knowledgePopMin = 0.12;
 	const knowledgeHoverTween = { duration: 220, easing: cubicOut };
 	const knowledgeHoverScale1 = tweened(1, knowledgeHoverTween);
@@ -108,6 +120,97 @@ const roofX = tweened(roofHiddenX, stageTween);
 	const knowledgeHoverOpacity3 = tweened(1, knowledgeHoverTween);
 	const knowledgeHoverOpacity4 = tweened(1, knowledgeHoverTween);
 	const knowledgeHoverOpacity5 = tweened(1, knowledgeHoverTween);
+	const knowledgeTowerConfigs = [
+		{
+			title: 'EXPERIENCIA',
+			body: `Gestión de proyectos técnicos, metodologías de desarrollo y arquitectura limpia en productos reales y entornos de producción.
+
+CI/CD con Jenkins y GitHub; despliegues seguros, reproducibles y auditables.
+
+Redes y sistemas: soporte remoto/presencial, periféricos, servicios y continuidad.
+
+Desarrollo web y multiplataforma.
+Backend: Rust, Java, Python, Go. Frontend: SvelteKit, React, JavaFX.
+
+Secure by Design, desarrollo limpio e IA aplicada.
+Machine Learning: detección de eventos con Isolation Forest.
+
+SOCs, SOAR, SIEM, UEBA y EDRs (Elastic) en laboratorio.
+Métricas y gobernanza con Grafana y Prometheus.
+
+Git/GitHub diario, VPS, backups y rollbacks.
+Ubuntu Server 24.04 LTS.
+
+Robótica (ROS 2) y sensores/Arduino.
+Frontend orientado a UX y marketing.
+
+Telecomunicaciones seguras, versionado de APIs y certificados HTTPS.
+SSH multi‑cuenta y concienciación en seguridad digital.
+
+Interés en DevSecOps, infraestructura y soberanía tecnológica.
+Prompt engineering y documentación para desarrollo seguro y auditable.
+Ideas para ciberseguridad e infraestructura con agentes de IA.`,
+			width: 6.2,
+			height: 3.0,
+			depth: 1.9,
+			titlePlaneWidth: 4.6,
+			titlePlaneHeight: 0.78,
+			bodyPlaneWidth: 6.0,
+			bodyPlaneHeight: 2.2,
+			titleCanvasWidth: 2100,
+			titleCanvasHeight: 360,
+			titleFontSize: 38,
+			bodyCanvasWidth: 2200,
+			bodyCanvasHeight: 840,
+			bodyFontSize: 24,
+			maxChars: 110
+		},
+		{
+			title: 'ACTUALMENTE',
+			body: `Gestión de una aplicación web en producción para un cliente, desplegada en VPS con Ubuntu, usando Next.js, Node.js y SQLite, con planes definidos de migración a PostgreSQL. Pipeline CI/CD completo con Jenkins, automatización de tareas del servidor y seguridad aplicada mediante Caddy.
+
+Desarrollo de proyectos orientados a la migración de un ERP en una empresa de electromecánica, con el objetivo de automatizar procesos repetitivos, mejorar la claridad de los flujos críticos y sentar las bases para una explotación estadística estratégica del negocio. Visión a medio plazo de integrar inteligencia artificial propia para una gestión de incidencias más profesional y ágil.
+
+Actualmente en búsqueda de prácticas, con el objetivo de adquirir experiencia real en desarrollo en equipo, entornos profesionales y tecnologías vanguardistas. Especial interés en certificaciones y auditorías de seguridad (DAST, SAST, ENS, ISO 27001).`,
+			width: 5.8,
+			height: 2.9,
+			depth: 1.8,
+			titlePlaneWidth: 4.2,
+			titlePlaneHeight: 0.78,
+			bodyPlaneWidth: 5.6,
+			bodyPlaneHeight: 2.1,
+			titleCanvasWidth: 1900,
+			titleCanvasHeight: 360,
+			titleFontSize: 38,
+			bodyCanvasWidth: 2100,
+			bodyCanvasHeight: 800,
+			bodyFontSize: 24,
+			maxChars: 108
+		},
+		{
+			title: 'OBJETIVOS',
+			body: `Seguir creciendo como profesional en el ámbito del desarrollo seguro y la ciberseguridad aplicada al producto, aportando una base sólida y una alta capacidad para comprender sistemas complejos, incluso partiendo de una formación formal compuesta por DAM y un máster en Desarrollo con Inteligencia Artificial.
+
+Busco una experiencia enriquecedora, donde aprender de equipos experimentados, aportar valor desde el primer día y continuar desarrollándome técnica y personalmente, manteniendo siempre una actitud honesta, curiosa y orientada a la divulgación tecnológica.
+
+Además, tengo un interés creciente en el desarrollo multiplataforma con Tauri, explorando su potencial para aplicaciones ligeras y seguras. Cuento con experiencia práctica en Kotlin utilizando Android Studio y conocimientos básicos de Swift en Xcode, lo que me permite comprender los fundamentos del desarrollo móvil nativo y su integración con arquitecturas modernas.`,
+			width: 6.0,
+			height: 3.0,
+			depth: 1.9,
+			titlePlaneWidth: 4.4,
+			titlePlaneHeight: 0.78,
+			bodyPlaneWidth: 5.8,
+			bodyPlaneHeight: 2.2,
+			titleCanvasWidth: 2000,
+			titleCanvasHeight: 360,
+			titleFontSize: 38,
+			bodyCanvasWidth: 2200,
+			bodyCanvasHeight: 840,
+			bodyFontSize: 24,
+			maxChars: 110,
+			bodyAlign: 'left'
+		}
+	] as const;
 	// Intentionally explicit mapping.
 	// This avoids premature abstraction and keeps the visual pipeline predictable.
 	// Do not generalize unless the interaction model changes.
@@ -185,6 +288,10 @@ const roofX = tweened(roofHiddenX, stageTween);
 	particleGeometry.setAttribute('size', particleSizeAttr);
 	let cubeFocusIndex = 0;
 	let knowledgeTriggered = false;
+	let knowledgeStage = 0;
+	let knowledgeTowerIndex = 0;
+	let nextTowerIndex: number | null = null;
+	let reeling = false;
 	let knowledgeHoverIndex: number | null = null;
 	let lastKnowledgeHoverIndex: number | null = null;
 	let lastHoveredIndex: number | null = null;
@@ -367,15 +474,6 @@ const roofX = tweened(roofHiddenX, stageTween);
 			accent: '#e6e6e6',
 			uiText: '#ffffff',
 			uiLine: '#ffffff'
-		},
-		nukewhite: {
-			backgroundColor: '#ffffff',
-			gridColor: '#0b0b0b',
-			matrixBase: '#111111',
-			matrixHead: '#000000',
-			accent: '#0b0b0b',
-			uiText: '#0b0b0b',
-			uiLine: '#0b0b0b'
 		}
 	} as const;
 
@@ -479,6 +577,33 @@ const roofX = tweened(roofHiddenX, stageTween);
 
 	const handlePointerDown = (event: PointerEvent) => {
 		if (event.button !== 0) return;
+		if ($viewMode === 'contact' && canvas) {
+			const currentCamera = camera.current as THREE.Camera | undefined;
+			const rect = canvas.getBoundingClientRect();
+			const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+			const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+			pointer.set(x, y);
+			if (currentCamera) {
+				raycaster.setFromCamera(pointer, currentCamera);
+				const targets = contactMeshes
+					.map((mesh, index) => (mesh ? { mesh, index } : null))
+					.filter((entry): entry is { mesh: THREE.Mesh; index: number } => Boolean(entry));
+				if (targets.length) {
+					const hits = raycaster.intersectObjects(
+						targets.map((entry) => entry.mesh),
+						false
+					);
+					if (hits.length) {
+						const match = targets.find((entry) => entry.mesh === hits[0].object);
+						const link = match ? contactLinks[match.index] : null;
+						if (link && typeof window !== 'undefined') {
+							window.open(link, '_blank', 'noopener');
+						}
+					}
+				}
+			}
+			return;
+		}
 		isDragging = true;
 		lastX = event.clientX;
 		if (step >= 7 && canvas) {
@@ -539,6 +664,20 @@ const roofX = tweened(roofHiddenX, stageTween);
 		knowledgeHoverIndex = null;
 		knowledgeHoverIndexStore.set(null);
 		contactHoverIndex = null;
+	};
+
+	const startReel = (targetIndex: number) => {
+		if (reeling || targetIndex === knowledgeTowerIndex) return;
+		reeling = true;
+		nextTowerIndex = targetIndex;
+		knowledgeTowerHoverIndex = null;
+		reelProgress.set(1, { duration: reelDuration, easing: cubicOut });
+		setTimeout(() => {
+			knowledgeTowerIndex = targetIndex;
+			nextTowerIndex = null;
+			reeling = false;
+			reelProgress.set(0, { duration: 0 });
+		}, reelDuration);
 	};
 
 	const applyMainStepDelta = (direction: 1 | -1) => {
@@ -648,6 +787,18 @@ const roofX = tweened(roofHiddenX, stageTween);
 		}
 
 		if ($viewMode === 'knowledge') {
+			if (knowledgeStage >= 2) {
+				const targets = knowledgeTowerMeshes.filter((mesh): mesh is THREE.Mesh => Boolean(mesh));
+				if (!targets.length) return;
+				const hits = raycaster.intersectObjects(targets, false);
+				if (hits.length) {
+					const hitIndex = targets.indexOf(hits[0].object as THREE.Mesh);
+					knowledgeTowerHoverIndex = hitIndex >= 0 ? hitIndex : null;
+				} else {
+					knowledgeTowerHoverIndex = null;
+				}
+				return;
+			}
 			const targets = knowledgeMeshes.filter((mesh): mesh is THREE.Mesh => Boolean(mesh));
 			if (!targets.length) return;
 			const hits = raycaster.intersectObjects(targets, false);
@@ -691,12 +842,43 @@ const roofX = tweened(roofHiddenX, stageTween);
 		// Projects is hover-driven; scroll input is intentionally ignored here.
 		if ($viewMode === 'projects') return;
 		if ($viewMode === 'knowledge') {
-			if (event.deltaY > 0 && !knowledgeTriggered) {
-				knowledgeTriggered = true;
-				knowledgeAppear.set(1);
-			} else if (event.deltaY < 0 && knowledgeTriggered) {
-				knowledgeTriggered = false;
-				knowledgeAppear.set(0);
+			if (event.deltaY > 0) {
+				if (!knowledgeTriggered) {
+					knowledgeTriggered = true;
+					knowledgeStage = 1;
+					knowledgeAppear.set(1);
+					knowledgeDrop.set(0);
+					towerAppear.set(0);
+				} else if (knowledgeStage === 1) {
+					knowledgeStage = 2;
+					knowledgeDrop.set(1);
+					towerAppear.set(1);
+					knowledgeHoverIndex = null;
+					knowledgeHoverIndexStore.set(null);
+				} else if (knowledgeStage === 2) {
+					knowledgeStage = 3;
+				} else if (knowledgeStage === 3) {
+					knowledgeStage = 4;
+				}
+			} else if (event.deltaY < 0) {
+				if (knowledgeStage === 4) {
+					knowledgeStage = 3;
+				} else if (knowledgeStage === 3) {
+					knowledgeStage = 2;
+				} else if (knowledgeStage === 2) {
+					knowledgeStage = 1;
+					knowledgeDrop.set(0);
+					towerAppear.set(0);
+					knowledgeTowerHoverIndex = null;
+				} else if (knowledgeTriggered) {
+					knowledgeTriggered = false;
+					knowledgeStage = 0;
+					knowledgeAppear.set(0);
+					knowledgeDrop.set(0);
+					towerAppear.set(0);
+					knowledgeHoverIndex = null;
+					knowledgeHoverIndexStore.set(null);
+				}
 			}
 			return;
 		}
@@ -916,9 +1098,22 @@ $: structureYOffset.set(step >= 5 ? structureLiftY : 0, structureTween);
 
 	$: if ($viewMode !== 'knowledge') {
 		knowledgeTriggered = false;
+		knowledgeStage = 0;
 		knowledgeAppear.set(0);
+		knowledgeDrop.set(0);
+		towerAppear.set(0);
+		reelProgress.set(0, { duration: 0 });
+		reeling = false;
+		knowledgeTowerIndex = 0;
+		nextTowerIndex = null;
 		knowledgeHoverIndex = null;
 		knowledgeHoverIndexStore.set(null);
+		knowledgeTowerHoverIndex = null;
+	}
+
+	$: if ($viewMode === 'knowledge' && knowledgeStage >= 2) {
+		const desiredIndex = Math.min(knowledgeStage - 2, 2);
+		startReel(desiredIndex);
 	}
 
 	$: if ($viewMode !== 'contact') {
@@ -1050,7 +1245,7 @@ $: structureYOffset.set(step >= 5 ? structureLiftY : 0, structureTween);
 	</T.Group>
 </T.Group>
 
-{#if $viewMode !== 'knowledge' && $viewMode !== 'projects' && $viewMode !== 'contact' && step >= 7}
+{#if $viewMode !== 'knowledge' && $viewMode !== 'projects' && $viewMode !== 'contact' && $viewMode !== 'blog' && step >= 7}
 	<T.Group
 		bind:ref={sideRightGroup}
 		position={[
@@ -1211,10 +1406,15 @@ $: structureYOffset.set(step >= 5 ? structureLiftY : 0, structureTween);
 	visible={$viewMode === 'contact'}
 	hoverIndex={contactHoverIndex}
 	contactMeshes={contactMeshes}
+	bind:contactLinks
 />
 
 {#if $viewMode === 'knowledge'}
-	<T.Group name="KnowledgeFoundations" position={[0, knowledgeY, 0]}>
+	{@const dropFactor = 1 - $knowledgeDrop}
+	<T.Group
+		name="KnowledgeFoundations"
+		position={[0, knowledgeY - $knowledgeDrop * knowledgeDropDistance, 0]}
+	>
 		{#each [-2, -1, 0, 1, 2] as slot}
 			{@const index = slot + 2}
 			<T.Group
@@ -1237,10 +1437,11 @@ $: structureYOffset.set(step >= 5 ? structureLiftY : 0, structureTween);
 			>
 				<Foundation
 					bind:meshRef={knowledgeMeshes[index]}
-					visible={$knowledgeAppear > 0.01}
+					visible={$knowledgeAppear > 0.01 && dropFactor > 0.02}
 					opacity={
 						0.18 *
 						$knowledgeAppear *
+						dropFactor *
 						(index === 0
 							? $knowledgeHoverOpacity1
 							: index === 1
@@ -1255,6 +1456,74 @@ $: structureYOffset.set(step >= 5 ? structureLiftY : 0, structureTween);
 			</T.Group>
 		{/each}
 	</T.Group>
+	{#if knowledgeStage >= 2}
+		{@const currentConfig = knowledgeTowerConfigs[knowledgeTowerIndex]}
+		{@const direction =
+			nextTowerIndex !== null && nextTowerIndex < knowledgeTowerIndex ? -1 : 1}
+		{@const t = $reelProgress}
+		{@const currentX = reeling ? t * reelOffset * direction : 0}
+		{@const nextX = reeling && nextTowerIndex !== null ? (t - 1) * reelOffset * direction : 0}
+		<T.Group
+			name="KnowledgeTowers"
+			position={[0, towerBaseY + (1 - $towerAppear) * -4, 0.2]}
+		>
+			<KnowledgeTower
+				title={currentConfig.title}
+				body={currentConfig.body}
+				position={[currentX, 0, 0]}
+				appear={$towerAppear}
+				hovered={knowledgeTowerHoverIndex === 0}
+				bind:meshRef={knowledgeTowerMeshes[0]}
+				width={currentConfig.width}
+				height={currentConfig.height}
+				depth={currentConfig.depth}
+				titlePlaneWidth={currentConfig.titlePlaneWidth}
+				bodyPlaneWidth={currentConfig.bodyPlaneWidth}
+				bodyPlaneHeight={currentConfig.bodyPlaneHeight}
+				titleCanvasWidth={currentConfig.titleCanvasWidth ?? 800}
+				titleCanvasHeight={currentConfig.titleCanvasHeight ?? 180}
+				titleFontSize={currentConfig.titleFontSize ?? 30}
+				bodyCanvasWidth={currentConfig.bodyCanvasWidth ?? 900}
+				bodyCanvasHeight={currentConfig.bodyCanvasHeight ?? 700}
+				bodyFontSize={currentConfig.bodyFontSize}
+				maxChars={currentConfig.maxChars}
+				bodyAlign={currentConfig.bodyAlign ?? 'left'}
+				titleOffsetX={0}
+				bodyOffsetX={0.7}
+				bodyOffsetY={0.02}
+				typingSpeedMs={4}
+			/>
+			{#if nextTowerIndex !== null}
+				{@const nextConfig = knowledgeTowerConfigs[nextTowerIndex]}
+				<KnowledgeTower
+					title={nextConfig.title}
+					body={nextConfig.body}
+					position={[nextX, 0, 0]}
+					appear={$towerAppear}
+					hovered={knowledgeTowerHoverIndex === 1}
+					bind:meshRef={knowledgeTowerMeshes[1]}
+					width={nextConfig.width}
+					height={nextConfig.height}
+					depth={nextConfig.depth}
+					titlePlaneWidth={nextConfig.titlePlaneWidth}
+					bodyPlaneWidth={nextConfig.bodyPlaneWidth}
+					bodyPlaneHeight={nextConfig.bodyPlaneHeight}
+					titleCanvasWidth={nextConfig.titleCanvasWidth ?? 800}
+					titleCanvasHeight={nextConfig.titleCanvasHeight ?? 180}
+					titleFontSize={nextConfig.titleFontSize ?? 30}
+					bodyCanvasWidth={nextConfig.bodyCanvasWidth ?? 900}
+					bodyCanvasHeight={nextConfig.bodyCanvasHeight ?? 700}
+					bodyFontSize={nextConfig.bodyFontSize}
+					maxChars={nextConfig.maxChars}
+					bodyAlign={nextConfig.bodyAlign ?? 'left'}
+					titleOffsetX={0}
+					bodyOffsetX={0.7}
+					bodyOffsetY={0.02}
+					typingSpeedMs={4}
+				/>
+			{/if}
+		</T.Group>
+	{/if}
 {/if}
 
 {#if $viewMode === 'projects'}

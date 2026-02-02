@@ -5,6 +5,7 @@
 </script>
 
 <svelte:head>
+	<title>Portfolio Fran Cobos</title>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 

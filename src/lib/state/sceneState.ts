@@ -10,8 +10,7 @@ export type AmbientVariant =
 	| 'blueprint'
 	| 'infrared'
 	| 'ultraviolet'
-	| 'cleanblack'
-	| 'nukewhite';
+	| 'cleanblack';
 export type AmbientTokens = {
 	backgroundColor: string;
 	gridColor: string;

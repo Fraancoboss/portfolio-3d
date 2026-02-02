@@ -7,6 +7,7 @@
 	import Foundation from '$lib/components/Foundation.svelte';
 
 	export let label: string;
+	export let hoverText: string | null = null;
 	export let position: [number, number, number];
 	export let href: string | null = null;
 	export let floatPhase = 0;
@@ -24,6 +25,9 @@
 	let isHover = false;
 	let t = 0;
 	let labelTexture: CanvasTexture | null = null;
+	let displayText = label;
+	let typingTimer: ReturnType<typeof setInterval> | null = null;
+	let typingActive = false;
 	const hoverProgress = tweened(0, { duration: 220, easing: cubicOut });
 	const foundationCenterY = 0.13;
 
@@ -50,8 +54,28 @@
 		return new THREE.CanvasTexture(canvas);
 	};
 
+	const clearTyping = () => {
+		if (typingTimer) clearInterval(typingTimer);
+		typingTimer = null;
+		typingActive = false;
+	};
+
+	const startTyping = (value: string) => {
+		clearTyping();
+		typingActive = true;
+		displayText = '';
+		let index = 0;
+		typingTimer = setInterval(() => {
+			index += 1;
+			displayText = value.slice(0, index);
+			if (index >= value.length) {
+				clearTyping();
+			}
+		}, 22);
+	};
+
 	$: if (typeof window !== 'undefined') {
-		labelTexture = buildLabelTexture(label);
+		labelTexture = buildLabelTexture(displayText);
 		if (textMaterial && labelTexture) {
 			textMaterial.map = labelTexture;
 			textMaterial.needsUpdate = true;
@@ -61,6 +85,14 @@
 	$: effectiveHover = hovered ?? isHover;
 	$: hoverProgress.set(effectiveHover ? 1 : 0);
 	$: foundationStretch = 1 + $hoverProgress * hoverStretch;
+	$: hoverTargetText = hoverText ?? label;
+
+	$: if (!effectiveHover) {
+		clearTyping();
+		displayText = label;
+	} else if ($hoverProgress >= 0.98 && !typingActive && displayText !== hoverTargetText) {
+		startTyping(hoverTargetText);
+	}
 
 	useTask((delta) => {
 		if (!group) return;

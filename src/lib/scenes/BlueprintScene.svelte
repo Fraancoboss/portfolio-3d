@@ -6,6 +6,7 @@
 	import CenterStageLabel from '$lib/ui/CenterStageLabel.svelte';
 	import ProjectTextOverlay from '$lib/ui/ProjectTextOverlay.svelte';
 	import KnowledgeTextOverlay from '$lib/ui/KnowledgeTextOverlay.svelte';
+	import BlogOverlay from '$lib/ui/BlogOverlay.svelte';
 	import ScrollHints from '$lib/ui/ScrollHints.svelte';
 	import PortfolioGuide from '$lib/ui/PortfolioGuide.svelte';
 	import Header from '$lib/ui/Header.svelte';
@@ -48,6 +49,7 @@
 		class="main-layer"
 		class:projects={$viewMode === 'projects'}
 		class:knowledge={$viewMode === 'knowledge'}
+		class:blog={$viewMode === 'blog'}
 	>
 		<HoverOverlay />
 		<StageOverlay />
@@ -55,6 +57,7 @@
 	</div>
 	<ProjectTextOverlay />
 	<KnowledgeTextOverlay />
+	<BlogOverlay />
 </div>
 
 <style>
@@ -85,6 +88,10 @@
 	}
 
 	.main-layer.knowledge {
+		opacity: 0;
+	}
+
+	.main-layer.blog {
 		opacity: 0;
 	}
 </style>
