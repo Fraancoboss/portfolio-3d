@@ -28,12 +28,20 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm install
+        run: npm install --include=dev
         env:
           NPM_CONFIG_PRODUCTION: "false"
+          NODE_ENV: "development"
+
+      - name: Debug versions
+        run: |
+          node -v
+          npm -v
+          npx --no-install svelte-kit --version
+          npm ls @sveltejs/kit
 
       - name: Build
-        run: npm run build
+        run: npx --no-install svelte-kit build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
