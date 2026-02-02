@@ -38,10 +38,11 @@ jobs:
           node -v
           npm -v
           npx --no-install svelte-kit --version
+          npx --no-install vite --version
           npm ls @sveltejs/kit
 
       - name: Build
-        run: npx --no-install svelte-kit build
+        run: npm run build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
